@@ -16,6 +16,8 @@ public class Main {
 			System.out.println("\n-Selecione uma opção:");
 			System.out.println("1. Adicionar um empregado");
 			System.out.println("2. Remover um empregado");
+			if(horistas.size() > 0)
+				System.out.println(horistas.get(0).getName());
 			int sel = scan.nextInt();
 			scan.nextLine();
 			switch(sel) {
@@ -23,8 +25,10 @@ public class Main {
 					break;
 				case 2: removerEmpregado();
 					break;
+				case 3: editarEmpregado();
+				default: menu = false;
+					break;
 			}
-			System.out.println(horistas.get(0).getName());
 		}while(menu);
 	}
 
@@ -33,8 +37,7 @@ public class Main {
 		System.out.println("\tADIÇÃO DE EMPREGADO\n");
 
 		System.out.print("-CPF: ");
-		int cpf = scan.nextInt();
-		scan.nextLine();
+		String cpf = scan.nextLine();
 		System.out.print("-Nome: ");
 		String name = scan.nextLine();
 		System.out.print("-Endereço: ");
@@ -106,14 +109,13 @@ public class Main {
 		}while(sel <= 0 || sel > 3);
 
 		System.out.print("\n-CPF: ");
-		int cpf = scan.nextInt();
-		scan.nextLine();
+		String cpf = scan.nextLine();
 		int idx = -1;
 		switch(sel){
 			case 1:
 				int len = horistas.size();
 				for(int i = 0; i < len && idx == -1; i++){
-					if(horistas.get(i).getCpf() == cpf)
+					if(horistas.get(i).getCpf().equals(cpf))
 						idx = i;
 				}
 				if(idx != -1)
@@ -122,7 +124,7 @@ public class Main {
 			case 2:
 				len = assalariados.size();
 				for(int i = 0; i < len && idx == -1; i++){
-					if(assalariados.get(i).getCpf() == cpf)
+					if(assalariados.get(i).getCpf().equals(cpf))
 						idx = i;
 				}
 				if(idx != -1)
@@ -131,7 +133,7 @@ public class Main {
 			case 3:
 				len = comissionados.size();
 				for(int i = 0; i < len && idx == -1; i++){
-					if(comissionados.get(i).getCpf() == cpf)
+					if(comissionados.get(i).getCpf().equals(cpf))
 						idx = i;
 				}
 				if(idx != -1)
@@ -140,4 +142,17 @@ public class Main {
 		}
 	}
 
+	public static void editarEmpregado(){
+		System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+		System.out.println("\tEDITAR EMPREGADO\n");
+		System.out.println("-Selecione o tipo:");
+		int sel;
+		do{
+			System.out.println("1. Horista");
+			System.out.println("2. Assalariado");
+			System.out.println("3. Comissionado");
+			sel = scan.nextInt();
+			scan.nextLine();
+		}while(sel <= 0 || sel > 3);
+	}
 }

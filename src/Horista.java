@@ -5,7 +5,7 @@ public class Horista extends Empregado {
 	private List<DataEHora> pontosEntrada = new LinkedList<DataEHora>();
 	private List<DataEHora> pontosSaida = new LinkedList<DataEHora>();
 
-	public Horista(int id, int cpf, String name, String address, float salarioHora, String metodo) {
+	public Horista(int id, String cpf, String name, String address, float salarioHora, String metodo) {
 		super(id, cpf, name, address, salarioHora, metodo);
 	}
 

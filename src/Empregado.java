@@ -1,7 +1,7 @@
 
 public class Empregado {
 	private int id;
-	private int cpf;
+	private String cpf;
 	private String name;
 	private String adress;
 	private float salario;
@@ -10,7 +10,7 @@ public class Empregado {
 	private int sindicatoID;
 	private DataEHora ultimoPagamento;
 
-	public Empregado(int id, int cpf, String name, String address, float salario, String metodo) {
+	public Empregado(int id, String cpf, String name, String address, float salario, String metodo) {
 		this.id = id;
 		this.cpf = cpf;
 		this.name = name;
@@ -19,7 +19,7 @@ public class Empregado {
 		this.metodoDePagamento = metodo;
 	}
 
-	public int getCpf() {
+	public String getCpf() {
 		return cpf;
 	}
 
