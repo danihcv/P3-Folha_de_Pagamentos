@@ -432,10 +432,13 @@ public class Main {
 
         if(sel == 1) {
         	empregados.get(idxEmp).setAgenda("semanal");
+        	empregados.get(idxEmp).setAgendaRef(new Date(7*24*60*60*1000));
         } else if(sel == 2) {
         	empregados.get(idxEmp).setAgenda("bi-semanal");
+            empregados.get(idxEmp).setAgendaRef(new Date(2*7*24*60*60*1000));
         } else {
         	empregados.get(idxEmp).setAgenda("mensal");
+            empregados.get(idxEmp).setAgendaRef(new Date((long)30*24*60*60*1000));
         }
     }
 
