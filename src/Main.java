@@ -1,9 +1,12 @@
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.text.*;
 import java.util.*;
 
 public class Main {
     static DateFormat format = new SimpleDateFormat("dd/MM/yyyy' 'HH:mm");
     static DataEHora datOperator = new DataEHora();
+    static List<Date> agendaRefs = new LinkedList<>();
 
     static Scanner scan = new Scanner(System.in);
     static int currentID = 0;
@@ -13,7 +16,7 @@ public class Main {
     static private List<Empregado> assalariados = new LinkedList<Empregado>();
     static private List<Horista> horistas = new LinkedList<Horista>();
     static private List<Comissionado> comissionados = new LinkedList<Comissionado>();
-    */
+*/
     static private List<Empregado> empregados = new LinkedList<Empregado>();
     static private Sindicato sindicato = new Sindicato();
 
@@ -480,13 +483,29 @@ public class Main {
 
         System.out.printf("\n• Total pago: R$ %.02f\n", pagamentoTotal);
         System.out.println("• Empregados pagos:");
-        System.out.println("    NOME    |    TIPO    |    SALÁRIO");
+        System.out.println("    NOME    |    TIPO    |    SALÁRIO LÍQUIDO");
         for(Empregado emp: emps){
             System.out.printf("%s | %s | %.02f\n", emp.getName(), emp.getType(), emp.getSalario());
         }
 
         System.out.println("\nAPERTE ENTER PARA CONTINUAR");
         scan.nextLine();
+    }
+
+    public static void criarNovaAgenda(){
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\tCRIAR NOVA AGENDA DE PAGAMENTO\n");
+
+        System.out.print("-Digite a nova agenda: ");
+        String agenda = scan.nextLine();
+
+        String[] parts = agenda.split(" ");
+
+        if(parts[0].equals("mensal")){
+
+        }else if(parts[0].equals("semanal")) {
+
+        }
     }
 
     public static void mostrarEmpregados(){
