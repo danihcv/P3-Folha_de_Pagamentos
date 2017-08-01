@@ -1,8 +1,10 @@
+import java.util.*;
+
 public class Venda {
     private float valor;
-    private DataEHora data;
+    private Date data;
 
-    public Venda(float valor, DataEHora data) {
+    public Venda(float valor, Date data) {
         this.valor = valor;
         this.data = data;
     }
@@ -11,7 +13,7 @@ public class Venda {
         return valor;
     }
 
-    public DataEHora getData() {
+    public Date getData() {
         return data;
     }
 

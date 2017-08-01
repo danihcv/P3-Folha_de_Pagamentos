@@ -2,23 +2,24 @@ import java.util.*;
 
 
 public class Horista extends Empregado {
-    private List<DataEHora> pontos = new LinkedList<DataEHora>();
+    private List<Date> pontos = new LinkedList<>();
 
     public Horista(int id, String cpf, String name, String address, float salarioHora, String metodo) {
         super(id, cpf, name, address, salarioHora, metodo);
         this.setType("horista");
         this.setAgenda("bi-semanal");
+        this.setAgendaRef(new Date(2*7*24*60*60*1000));
     }
 
-    public void baterPonto(DataEHora ponto){
+    public void baterPonto(Date ponto){
         this.pontos.add(ponto);
     }
 
-    public DataEHora getPontoAtIdx(int idx){
+    public Date getPontoAtIdx(int idx){
         return this.pontos.get(idx);
     }
 
-    public DataEHora getUltimoPonto(){
+    public Date getUltimoPonto(){
     	return this.pontos.get(this.pontos.size()-1);
     }
 
@@ -27,7 +28,7 @@ public class Horista extends Empregado {
     }
 
     @Override
-    public boolean fazerPagamento(DataEHora dataAtual){
+    public boolean fazerPagamento(Date dataAtual){
         return false;
     }
 }

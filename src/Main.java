@@ -1,6 +1,10 @@
+import java.text.*;
 import java.util.*;
 
 public class Main {
+    static DateFormat format = new SimpleDateFormat("dd/MM/yyyy' 'HH:mm");
+    static DataEHora datOperator = new DataEHora();
+
     static Scanner scan = new Scanner(System.in);
     static int currentID = 0;
     static Stack<Empregado> pilhaEmpregados = new Stack<Empregado>();
@@ -28,6 +32,7 @@ public class Main {
             System.out.println("7. Atualizar agenda de pagamento");
             System.out.println("8. Undo");
             System.out.println("10. Mostrar todos os empregados");
+            System.out.println("11. Rodar folha de pagamentos");
 
             int sel = scan.nextInt();
             scan.nextLine();
@@ -49,6 +54,8 @@ public class Main {
                 case 8: undo();
                 	break;
                 case 10: mostrarEmpregados();
+                    break;
+                case 11: rodarFolha();
                     break;
                 default: menu = false;
                     break;
@@ -317,27 +324,18 @@ public class Main {
     		}
     	}while(idxEmp == -1);
 
-    	int dia, mes, ano, hora, minuto, segundo;
-    	System.out.print("-Digite o dia atual: ");
-    	dia = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite o mês atual: ");
-    	mes = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite o ano atual: ");
-    	ano = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite a hora atual: ");
-    	hora = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite os minutos atuais: ");
-    	minuto = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite os segundos atuais: ");
-    	segundo = scan.nextInt();
-    	scan.nextLine();
+        Date data = null;
+        do {
+            System.out.print("-Digite a data atual (dd/MM/aaaa HH:mm): ");
+            String line = scan.nextLine();
+            try {
+                data = format.parse(line);
+            } catch (ParseException e) {
+                System.out.println(">>Formato errado!");
+            }
+        }while (data == null);
 
-    	((Horista)empregados.get(idxEmp)).baterPonto(new DataEHora(dia, mes, ano, hora, minuto, segundo));
+    	((Horista)empregados.get(idxEmp)).baterPonto(data);
     }
 
     public static void fazerVenda(){
@@ -362,27 +360,18 @@ public class Main {
     	valor = scan.nextFloat();
     	scan.nextLine();
 
-    	int dia, mes, ano, hora, minuto, segundo;
-    	System.out.print("-Digite o dia da venda: ");
-    	dia = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite o mês da venda: ");
-    	mes = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite o ano da venda: ");
-    	ano = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite a hora da venda: ");
-    	hora = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite os minutos da venda: ");
-    	minuto = scan.nextInt();
-    	scan.nextLine();
-    	System.out.print("-Digite os segundos da venda: ");
-    	segundo = scan.nextInt();
-    	scan.nextLine();
+        Date data = null;
+        do {
+            System.out.print("-Digite a data da venda (dd/MM/aaaa HH:mm): ");
+            String line = scan.nextLine();
+            try {
+                data = format.parse(line);
+            } catch (ParseException e) {
+                System.out.println(">>Formato errado!");
+            }
+        }while (data == null);
 
-    	((Comissionado)empregados.get(idxEmp)).addVenda(valor, new DataEHora(dia, mes, ano, hora, minuto, segundo));
+        ((Comissionado)empregados.get(idxEmp)).addVenda(valor, data);
     }
 
     public static void atualizarTaxaSindical(){
@@ -454,6 +443,49 @@ public class Main {
 
     }
 
+    public static void rodarFolha(){
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\tRODAR FOLHA DE PAGAMENTO\n");
+
+        Date dataAtual = null;
+        do {
+            System.out.print("-Digite a data atual (dd/MM/aaaa HH:mm): ");
+            String line = scan.nextLine();
+            try {
+                dataAtual = format.parse(line);
+            } catch (ParseException e) {
+                System.out.println(">>Formato errado!\n");
+            }
+        }while(dataAtual == null);
+
+        float pagamentoTotal = 0;
+        List<Empregado> emps = new LinkedList<>();
+        for (Empregado empregado : empregados) {
+            if (empregado.getUltimoPagamento() == null) {
+                pagamentoTotal += empregado.getSalario();
+                empregado.setUltimoPagamento(dataAtual);
+                emps.add(empregado);
+            } else {
+                Date dif = datOperator.getTimeDifference(empregado.getUltimoPagamento(), dataAtual);
+                if (empregado.getUltimoPagamento() == null || empregado.getAgendaRef().before(dif) || dif.compareTo(empregado.getAgendaRef()) == 0) {
+                    pagamentoTotal += empregado.getSalario();
+                    empregado.setUltimoPagamento(dataAtual);
+                    emps.add(empregado);
+                }
+            }
+        }
+
+        System.out.printf("\n• Total pago: R$ %.02f\n", pagamentoTotal);
+        System.out.println("• Empregados pagos:");
+        System.out.println("    NOME    |    TIPO    |    SALÁRIO");
+        for(Empregado emp: emps){
+            System.out.printf("%s | %s | %.02f\n", emp.getName(), emp.getType(), emp.getSalario());
+        }
+
+        System.out.println("\nAPERTE ENTER PARA CONTINUAR");
+        scan.nextLine();
+    }
+
     public static void mostrarEmpregados(){
     	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tMOSTRAR EMPREGADOS\n");
@@ -462,14 +494,13 @@ public class Main {
             System.out.println(empregados.get(i));
             if(empregados.get(i).getType().equals("horista")){
             	if(((Horista)empregados.get(i)).getTotalDePontosBatidos() > 0){
-            		DataEHora ponto = ((Horista)empregados.get(i)).getUltimoPonto();
-            		System.out.printf("\t-Ultimo ponto batido: %02d/%02d/%04d %02d:%02d:%02d\n", ponto.getDia(), ponto.getMes(), ponto.getAno(), ponto.getHora(), ponto.getMinutos(), ponto.getSegundos());
+            		Date ponto = ((Horista)empregados.get(i)).getUltimoPonto();
+            		System.out.printf("\t-Ultimo ponto batido: %s\n", format.format(ponto));
             	}
             } else if(empregados.get(i).getType().equals("comissionado")){
             	if(((Comissionado)empregados.get(i)).getTotalVendas() > 0){
             		Venda venda = ((Comissionado)empregados.get(i)).getUltimaVenda();
-            		DataEHora data = venda.getData();
-            		System.out.printf("\t-Ultima venda efetuada: R$ %.02f; %02d/%02d/%04d %02d:%02d:%02d\n", venda.getValor(), data.getDia(), data.getMes(), data.getAno(), data.getHora(), data.getMinutos(), data.getSegundos());
+            		System.out.printf("\t-Ultima venda efetuada: R$ %.02f; %s\n", venda.getValor(), format.format(venda.getData()));
             	}
             }
             System.out.println("-------------------------");

@@ -9,9 +9,10 @@ public class Comissionado extends Empregado{
         this.comissao = comissao;
         this.setType("comissionado");
         this.setAgenda("bi-semanal");
+        this.setAgendaRef(new Date(2*7*24*60*60*1000));
     }
 
-    public void addVenda(float valor, DataEHora data) {
+    public void addVenda(float valor, Date data) {
         this.vendas.add(new Venda(valor, data));
     }
 

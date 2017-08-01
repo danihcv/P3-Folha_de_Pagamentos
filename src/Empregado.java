@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Empregado {
     private String type;
     private int id;
@@ -9,8 +11,9 @@ public class Empregado {
     private boolean sindicalista;
     private int sindicatoID = -1;
     private float sindicatoTaxa = 0;
-    private DataEHora ultimoPagamento;
+    private Date ultimoPagamento;
     private String agenda;
+    private Date agendaRef;
 
     public Empregado(int id, String cpf, String name, String address, float salario, String metodo) {
         this.type = "assalariado";
@@ -21,6 +24,7 @@ public class Empregado {
         this.salario = salario;
         this.metodoDePagamento = metodo;
         this.agenda = "mensal";
+        this.agendaRef = new Date((long)30*24*60*60*1000);
     }
 
     public String getAgenda() {
@@ -31,7 +35,16 @@ public class Empregado {
 		this.agenda = agenda;
 	}
 
-	public String getCpf() {
+    public Date getAgendaRef() {
+        return agendaRef;
+    }
+
+    public void setAgendaRef(Date agendaRef) {
+        this.agendaRef = agendaRef;
+    }
+
+
+    public String getCpf() {
         return cpf;
     }
 
@@ -87,22 +100,22 @@ public class Empregado {
         this.address = address;
     }
 
-    public boolean fazerPagamento(DataEHora dataAtual){
-        switch(dataAtual.getMes()) {
+    public boolean fazerPagamento(Date dataAtual){
+        switch(dataAtual.getMonth()) {
             case 1: case 3: case 5: case 7: case 8: case 10: case 12:
-                if(dataAtual.getDia() == 31){
+                if(dataAtual.getDay() == 31){
                     this.setUltimoPagamento(dataAtual);
                     return true;
                 }
                 break;
             case 2:
-                if(dataAtual.getDia() >= 28){
+                if(dataAtual.getDay() >= 28){
                     this.setUltimoPagamento(dataAtual);
                     return true;
                 }
                 break;
             case 4: case 6: case 9: case 11:
-                if(dataAtual.getDia() == 30){
+                if(dataAtual.getDay() == 30){
                     this.setUltimoPagamento(dataAtual);
                     return true;
                 }
@@ -111,11 +124,11 @@ public class Empregado {
         return false;
     }
 
-    public DataEHora getUltimoPagamento() {
+    public Date getUltimoPagamento() {
         return ultimoPagamento;
     }
 
-    public void setUltimoPagamento(DataEHora ultimoPagamento) {
+    public void setUltimoPagamento(Date ultimoPagamento) {
         this.ultimoPagamento = ultimoPagamento;
     }
 
