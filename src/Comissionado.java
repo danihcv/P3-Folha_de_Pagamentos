@@ -1,7 +1,8 @@
+import javax.smartcardio.CommandAPDU;
 import java.util.*;
 
 public class Comissionado extends Empregado{
-    private List<Venda> vendas = new LinkedList<Venda>();
+    private List<Venda> vendas = new LinkedList<>();
     private float comissao;
 
     public Comissionado(int id, String cpf, String name, String address, float salario, float comissao, String metodo) {
@@ -10,6 +11,12 @@ public class Comissionado extends Empregado{
         this.setType("comissionado");
         this.setAgenda("bi-semanal");
         this.setAgendaRef(new Date(2*7*24*60*60*1000));
+    }
+
+    public Comissionado(Comissionado emp){
+        super(emp);
+        this.vendas = emp.vendas;
+        this.comissao = emp.comissao;
     }
 
     public void addVenda(float valor, Date data) {
@@ -25,11 +32,19 @@ public class Comissionado extends Empregado{
     }
 
     public int getTotalVendas(){
-    	return this.vendas.size();
+        return this.vendas.size();
     }
 
     public Venda getUltimaVenda(){
-    	return this.vendas.get(this.vendas.size() - 1);
+        return this.vendas.get(this.vendas.size() - 1);
+    }
+
+    public float getValorVendaAtIdx(int i){
+        return this.vendas.get(i).getValor();
+    }
+
+    public void resetVendas(){
+        this.vendas = new LinkedList<>();
     }
 
     @Override

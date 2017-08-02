@@ -1,22 +1,32 @@
-import com.sun.org.apache.xpath.internal.SourceTree;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.text.*;
+import java.lang.reflect.Type;
 import java.util.*;
+import java.text.*;
 
 public class Main {
     static DateFormat format = new SimpleDateFormat("dd/MM/yyyy' 'HH:mm");
+    static DateFormat formatDay = new SimpleDateFormat("EEE");
     static DataEHora datOperator = new DataEHora();
-    static List<Date> agendaRefs = new LinkedList<>();
+    static List<Date> agendaRefsDate = new LinkedList<>();
+    static List<String> agendaRefsDia = new LinkedList<>();
+    static List<String> agendaRefsString = new LinkedList<>();
+
+    static Gson gson = new Gson();
+    static Type typeHor = new TypeToken<LinkedList<Horista>>() {}.getType();
+    static Type typeAss = new TypeToken<LinkedList<Empregado>>() {}.getType();
+    static Type typeCom = new TypeToken<LinkedList<Comissionado>>() {}.getType();
 
     static Scanner scan = new Scanner(System.in);
     static int currentID = 0;
-    static Stack<Empregado> pilhaEmpregados = new Stack<Empregado>();
-    static Stack<String> pilhaActions = new Stack<String>();
-/*
-    static private List<Empregado> assalariados = new LinkedList<Empregado>();
-    static private List<Horista> horistas = new LinkedList<Horista>();
-    static private List<Comissionado> comissionados = new LinkedList<Comissionado>();
-*/
+    static Stack<String> pilhaUndoAss = new Stack<>();
+    static Stack<String> pilhaUndoHor = new Stack<>();
+    static Stack<String> pilhaUndoCom = new Stack<>();
+    static Stack<String> pilhaRedoAss = new Stack<>();
+    static Stack<String> pilhaRedoHor = new Stack<>();
+    static Stack<String> pilhaRedoCom = new Stack<>();
+
     static private List<Empregado> empregados = new LinkedList<Empregado>();
     static private Sindicato sindicato = new Sindicato();
 
@@ -34,8 +44,10 @@ public class Main {
             System.out.println("6. Lançar uma taxa de serviço");
             System.out.println("7. Atualizar agenda de pagamento");
             System.out.println("8. Undo");
-            System.out.println("10. Mostrar todos os empregados");
-            System.out.println("11. Rodar folha de pagamentos");
+            System.out.println("9. Redo");
+            System.out.println("10. Rodar folha de pagamentos");
+            System.out.println("11. Criar nova agenda de pagamento");
+            System.out.println("12. Mostrar todos os empregados");
 
             int sel = scan.nextInt();
             scan.nextLine();
@@ -47,20 +59,24 @@ public class Main {
                 case 3: editarEmpregado();
                     break;
                 case 4: baterPonto();
-                	break;
+                    break;
                 case 5: fazerVenda();
-                	break;
+                    break;
                 case 6: atualizarTaxaSindical();
-                	break;
+                    break;
                 case 7: atualizarAgendaPagamento();
-                	break;
+                    break;
                 case 8: undo();
-                	break;
-                case 10: mostrarEmpregados();
                     break;
-                case 11: rodarFolha();
+                case 9: redo();
                     break;
-                default: menu = false;
+                case 10: rodarFolha();
+                    break;
+                case 11: criarNovaAgenda();
+                    break;
+                case 12: mostrarEmpregados();
+                    break;
+                case -1: menu = false;
                     break;
             }
         }while(menu);
@@ -123,6 +139,7 @@ public class Main {
                 break;
         }
 
+        makeChange();
         switch(tipo){
             case 1: empregados.add(new Horista(++currentID, cpf, name, address, salario, metodoDePagamento));
                 break;
@@ -136,17 +153,7 @@ public class Main {
     public static void removerEmpregado(){
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tREMOÇÃO DE EMPREGADO\n");
-/*
-        System.out.println("-Selecione o tipo:");
-        int sel;
-        do{
-            System.out.println("1. Horista");
-            System.out.println("2. Assalariado");
-            System.out.println("3. Comissionado");
-            sel = scan.nextInt();
-            scan.nextLine();
-        }while(sel <= 0 || sel > 3);
-*/
+
         System.out.print("\n-Digite o CPF: ");
         String cpf = scan.nextLine();
         int idx = -1;
@@ -155,24 +162,16 @@ public class Main {
             if(empregados.get(i).getCpf().equals(cpf))
                 idx = i;
         }
-        if(idx != -1)
+        if(idx != -1) {
+            makeChange();
             empregados.remove(idx);
+        }
     }
 
     public static void editarEmpregado(){
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tEDITAR EMPREGADO");
-    /*
-        int tipo;
-        do{
-            System.out.println("\n-Selecione o tipo:");
-            System.out.println("1. Horista");
-            System.out.println("2. Assalariado");
-            System.out.println("3. Comissionado");
-            tipo = scan.nextInt();
-            scan.nextLine();
-        }while(tipo <= 0 || tipo > 3);
-	*/
+
         String cpf;
         Empregado emp = null;
         int idxEmp = -1;
@@ -184,7 +183,7 @@ public class Main {
             for(int i = 0; i < empregados.size() && idxEmp == -1; i++) {
                 if(empregados.get(i).getCpf().equals(cpf)) {
                     idxEmp = i;
-                    emp = empregados.get(i);
+                    emp = new Empregado(empregados.get(i));
                 }
             }
         }while(idxEmp == -1);
@@ -201,7 +200,11 @@ public class Main {
             System.out.println("7. Taxa sindical");
             sel = scan.nextInt();
             scan.nextLine();
+            if(sel == -1)
+                return;
         }while(sel <= 0 || sel > 6);
+
+        makeChange();
 
         String newName, newAddress, newMetodoDePagamento;
         float newTaxa;
@@ -233,9 +236,9 @@ public class Main {
                     scan.nextLine();
                 }while (newType <= 0 || newType > 3);
                 if(newType == 1)
-                	empregados.add(new Horista(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
+                    empregados.add(new Horista(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
                 else if(newType == 2)
-                	empregados.add(new Empregado(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
+                    empregados.add(new Empregado(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
                 else{
                     System.out.println("-Digite a comissão (%): ");
                     float comissao = scan.nextFloat();
@@ -278,27 +281,27 @@ public class Main {
                     Float taxa = scan.nextFloat();
                     scan.nextLine();
 
-                	empregados.get(idxEmp).setSindicalista(true);
-                	empregados.get(idxEmp).setSindicatoTaxa(taxa);
-                	empregados.get(idxEmp).setSindicatoID(sindicato.getCurrentID());
+                    empregados.get(idxEmp).setSindicalista(true);
+                    empregados.get(idxEmp).setSindicatoTaxa(taxa);
+                    empregados.get(idxEmp).setSindicatoID(sindicato.getCurrentID());
                     sindicato.addSindicalista(empregados.get(idxEmp));
                     sindicato.setCurrentID(sindicato.getCurrentID() + 1);
                 } else if(res.equals("s")) {
-                	empregados.get(idxEmp).setSindicalista(false);
-                	empregados.get(idxEmp).setSindicatoTaxa(0);
-                	empregados.get(idxEmp).setSindicatoID(-1);
+                    empregados.get(idxEmp).setSindicalista(false);
+                    empregados.get(idxEmp).setSindicatoTaxa(0);
+                    empregados.get(idxEmp).setSindicatoID(-1);
                     sindicato.removeSindicalista(cpf);
                 }
                 break;
             case 6:
-            	System.out.println("\nALTERAR IDENTIFICAÇÃO NO SINDICATO\n");
-            	System.out.printf("• O ID atual do empregado no sindicato é %d\n", emp.getSindicatoID());
-            	System.out.print("-Insira a nova identificação desejada (int): ");
-            	int newID = scan.nextInt();
-            	scan.nextLine();
-            	empregados.get(idxEmp).setSindicatoID(newID);
-            	sindicato.setCurrentID(newID + 1);
-            	break;
+                System.out.println("\nALTERAR IDENTIFICAÇÃO NO SINDICATO\n");
+                System.out.printf("• O ID atual do empregado no sindicato é %d\n", emp.getSindicatoID());
+                System.out.print("-Insira a nova identificação desejada (int): ");
+                int newID = scan.nextInt();
+                scan.nextLine();
+                empregados.get(idxEmp).setSindicatoID(newID);
+                sindicato.setCurrentID(newID + 1);
+                break;
             case 7:
                 System.out.println("\nALTERAR TAXA SINDICAL\n");
                 System.out.printf("-Taxa atual: %f\n", emp.getSindicatoTaxa());
@@ -311,57 +314,72 @@ public class Main {
     }
 
     public static void baterPonto(){
-    	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    	System.out.println("\tBATER PONTO\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\tBATER PONTO\n");
 
-    	String cpf;
-    	int idxEmp = -1;
-    	do{
-    		System.out.print("\n-Digite o CPF do horista: ");
-    		cpf = scan.nextLine();
-    		if(cpf.equals("-1"))
-    			return;
-    		for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
-    			if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).getType().equals("horista"))
-    				idxEmp = i;
-    		}
-    	}while(idxEmp == -1);
+        String cpf;
+        int idxEmp = -1;
+        do{
+            System.out.print("\n-Digite o CPF do horista: ");
+            cpf = scan.nextLine();
+            if(cpf.equals("-1"))
+                return;
+            for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
+                if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).getType().equals("horista"))
+                    idxEmp = i;
+            }
+        }while(idxEmp == -1);
 
-        Date data = null;
+        Date dataEntrada = null, dataSaida = null;
         do {
-            System.out.print("-Digite a data atual (dd/MM/aaaa HH:mm): ");
+            System.out.print("-Digite a data da entrada (dd/MM/aaaa HH:mm): ");
             String line = scan.nextLine();
             try {
-                data = format.parse(line);
+                dataEntrada = format.parse(line);
             } catch (ParseException e) {
                 System.out.println(">>Formato errado!");
             }
-        }while (data == null);
+        }while (dataEntrada == null);
 
-    	((Horista)empregados.get(idxEmp)).baterPonto(data);
+        do {
+            System.out.print("-Digite a data da saída (dd/MM/aaaa HH:mm): ");
+            String line = scan.nextLine();
+            try {
+                dataSaida = format.parse(line);
+            } catch (ParseException e) {
+                System.out.println(">>Formato errado!");
+            }
+        }while (dataSaida == null);
+
+        makeChange();
+        long hrs = datOperator.getTimeDifference(dataEntrada, dataSaida).getTime();
+        hrs /= 60*60*1000;
+        System.out.println("PORRA: "+ hrs);
+        ((Horista)empregados.get(idxEmp)).baterPonto((int)hrs);
+        ((Horista)empregados.get(idxEmp)).setUltimoPonto(dataSaida);
     }
 
     public static void fazerVenda(){
-    	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\nFAZER UMA VENDA\n");
 
         String cpf;
-    	int idxEmp = -1;
-    	do{
-    		System.out.print("\n-Digite o CPF do comissionado: ");
-    		cpf = scan.nextLine();
-    		if(cpf.equals("-1"))
-    			return;
-    		for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
-    			if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).getType().equals("comissionado"))
-    				idxEmp = i;
-    		}
-    	}while(idxEmp == -1);
+        int idxEmp = -1;
+        do{
+            System.out.print("\n-Digite o CPF do comissionado: ");
+            cpf = scan.nextLine();
+            if(cpf.equals("-1"))
+                return;
+            for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
+                if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).getType().equals("comissionado"))
+                    idxEmp = i;
+            }
+        }while(idxEmp == -1);
 
-    	float valor;
-    	System.out.print("-Informe o valor da venda: ");
-    	valor = scan.nextFloat();
-    	scan.nextLine();
+        float valor;
+        System.out.print("-Informe o valor da venda: ");
+        valor = scan.nextFloat();
+        scan.nextLine();
 
         Date data = null;
         do {
@@ -374,84 +392,190 @@ public class Main {
             }
         }while (data == null);
 
+        makeChange();
         ((Comissionado)empregados.get(idxEmp)).addVenda(valor, data);
     }
 
     public static void atualizarTaxaSindical(){
-    	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\nATUALIZAR TAXA SINDICAL\n");
 
         String cpf;
-    	int idxEmp = -1;
-    	do{
-    		System.out.print("\n-Digite o CPF do empregado: ");
-    		cpf = scan.nextLine();
-    		if(cpf.equals("-1"))
-    			return;
-    		for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
-    			if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).isSindicalista())
-    				idxEmp = i;
-    		}
-    		if(idxEmp == -1)
-    			System.out.println(">>Não existe nenhum empregado com este CPF associado ao sindicato!");
-    	}while(idxEmp == -1);
+        int idxEmp = -1;
+        do{
+            System.out.print("\n-Digite o CPF do empregado: ");
+            cpf = scan.nextLine();
+            if(cpf.equals("-1"))
+                return;
+            for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
+                if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).isSindicalista())
+                    idxEmp = i;
+            }
+            if(idxEmp == -1)
+                System.out.println(">>Não existe nenhum empregado com este CPF associado ao sindicato!");
+        }while(idxEmp == -1);
 
-    	System.out.print("-Digite a nova taxa: ");
-    	float newTaxa = scan.nextFloat();
-    	scan.nextLine();
+        System.out.print("-Digite a nova taxa: ");
+        float newTaxa = scan.nextFloat();
+        scan.nextLine();
 
-    	empregados.get(idxEmp).setSindicatoTaxa(newTaxa);
+        makeChange();
+        empregados.get(idxEmp).setSindicatoTaxa(newTaxa);
     }
 
     public static void atualizarAgendaPagamento(){
-    	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tESCOLHER NOVA AGENDA\n");
 
         String cpf;
-    	int idxEmp = -1;
-    	do{
-    		System.out.print("\n-Digite o CPF do empregado: ");
-    		cpf = scan.nextLine();
-    		if(cpf.equals("-1"))
-    			return;
-    		for(int i = 0; i < empregados.size() && idxEmp == -1; i++){
-    			if(empregados.get(i).getCpf().equals(cpf) && empregados.get(i).isSindicalista())
-    				idxEmp = i;
-    		}
-    		if(idxEmp == -1)
-    			System.out.println(">>Não existe nenhum empregado com este CPF!");
-    	}while(idxEmp == -1);
+        int idxEmp = -1;
+        do{
+            System.out.print("\n-Digite o CPF do empregado: ");
+            cpf = scan.nextLine();
+            System.out.println("KRL: "+ cpf);
+            if(cpf.equals("-1"))
+                return;
+            for(int i = 0; i < empregados.size(); i++){
+                if(empregados.get(i).getCpf().equals(cpf))
+                    idxEmp = i;
+            }
+            if(idxEmp == -1)
+                System.out.println(">>Não existe nenhum empregado com este CPF!");
+        }while(idxEmp == -1);
 
-    	System.out.printf("• A agenda atual é %s.\n", empregados.get(idxEmp).getAgenda());
-    	int sel;
+        makeChange();
+        System.out.printf("• A agenda atual é %s.\n", empregados.get(idxEmp).getAgenda());
+        int sel;
         do {
             System.out.println("\n-Selecione a nova agenda de pagamento");
             System.out.println("1. Semanal");
             System.out.println("2. Bi-semanal");
             System.out.println("3. Mensal");
+            for(int i = 0; i < agendaRefsString.size(); i++){
+                System.out.printf("%d. %s\n", i+4, agendaRefsString.get(i));
+            }
             sel = scan.nextInt();
             scan.nextLine();
-        }while(sel <= 0 || sel > 3);
+        }while(sel <= 0 || sel > 3 + agendaRefsString.size());
 
+        makeChange();
         if(sel == 1) {
-        	empregados.get(idxEmp).setAgenda("semanal");
-        	empregados.get(idxEmp).setAgendaRef(new Date(7*24*60*60*1000));
+            empregados.get(idxEmp).setAgenda("semanal");
+            empregados.get(idxEmp).setAgendaRef(new Date(7*24*60*60*1000));
+            empregados.get(idxEmp).setAgendaDia("");
         } else if(sel == 2) {
-        	empregados.get(idxEmp).setAgenda("bi-semanal");
+            empregados.get(idxEmp).setAgenda("bi-semanal");
             empregados.get(idxEmp).setAgendaRef(new Date(2*7*24*60*60*1000));
-        } else {
-        	empregados.get(idxEmp).setAgenda("mensal");
+            empregados.get(idxEmp).setAgendaDia("");
+        } else if(sel == 3){
+            empregados.get(idxEmp).setAgenda("mensal");
             empregados.get(idxEmp).setAgendaRef(new Date((long)30*24*60*60*1000));
+            empregados.get(idxEmp).setAgendaDia("");
+        } else {
+            empregados.get(idxEmp).setAgenda(agendaRefsString.get(sel-4));
+            empregados.get(idxEmp).setAgendaRef(new Date(agendaRefsDate.get(sel-4).getTime()));
+            empregados.get(idxEmp).setAgendaDia(agendaRefsDia.get(sel-4));
+
+            String[] parts = agendaRefsString.get(sel-4).split(" ");
+            if(parts[0].equals("semanal")) {
+                if (empregados.get(idxEmp).getUltimoPagamento() == null) {
+                    empregados.get(idxEmp).setUltimoPagamento(new Date());
+                }
+                while (!formatDay.format(empregados.get(idxEmp).getUltimoPagamento()).equals(agendaRefsDia.get(sel - 4))) {
+                    Date curr = new Date(empregados.get(idxEmp).getUltimoPagamento().getTime());
+                    empregados.get(idxEmp).setUltimoPagamento(new Date(curr.getTime() - 24*60*60*1000));
+                }
+            } else {
+                if (empregados.get(idxEmp).getUltimoPagamento() == null) {
+                    empregados.get(idxEmp).setUltimoPagamento(new Date());
+                }
+                while (empregados.get(idxEmp).getUltimoPagamento().getDate() != Integer.parseInt(agendaRefsDia.get(sel - 4))) {
+                    System.out.println(empregados.get(idxEmp).getUltimoPagamento().getDate());
+                    System.out.println(Integer.parseInt(agendaRefsDia.get(sel - 4)));
+                    long curr = empregados.get(idxEmp).getUltimoPagamento().getTime();
+                    empregados.get(idxEmp).setUltimoPagamento(new Date(curr - 24*60*60*1000));
+                }
+            }
         }
     }
 
     public static void undo(){
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\tUNDO\n");
+        if(pilhaUndoHor.size() + pilhaUndoAss.size() + pilhaUndoCom.size() > 0) {
+            List<Horista> hors = new LinkedList<>();
+            List<Empregado> asss = new LinkedList<>();
+            List<Comissionado> coms = new LinkedList<>();
+            for(int i = 0; i < empregados.size(); i++){
+                switch (empregados.get(i).getType()){
+                    case "horista": hors.add((Horista)empregados.get(i));
+                        break;
+                    case "assalariado": asss.add(empregados.get(i));
+                        break;
+                    case "comissionado": coms.add((Comissionado)empregados.get(i));
+                        break;
+                }
+            }
+            pilhaRedoHor.push(gson.toJson(hors, typeHor));
+            pilhaRedoAss.push(gson.toJson(asss, typeAss));
+            pilhaRedoCom.push(gson.toJson(coms, typeCom));
 
+            hors = gson.fromJson(pilhaUndoHor.pop(), typeHor);
+            asss = gson.fromJson(pilhaUndoAss.pop(), typeAss);
+            coms = gson.fromJson(pilhaUndoCom.pop(), typeCom);
+            empregados = new LinkedList<>();
+            empregados.addAll(hors);
+            empregados.addAll(asss);
+            empregados.addAll(coms);
+            System.out.println("• Última alteração desfeita com sucesso!\n");
+        } else {
+            System.out.println("• Não há nenhuma alteração para ser desfeita!\n");
+        }
+        System.out.println("APERTE ENTER PARA CONTINUAR");
+        scan.nextLine();
+    }
+
+    public static void redo(){
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\tREDO\n");
+        if(pilhaRedoHor.size() + pilhaRedoAss.size() + pilhaRedoCom.size() > 0) {
+            List<Horista> hors = new LinkedList<>();
+            List<Empregado> asss = new LinkedList<>();
+            List<Comissionado> coms = new LinkedList<>();
+            for(int i = 0; i < empregados.size(); i++){
+                switch (empregados.get(i).getType()){
+                    case "horista": hors.add((Horista)empregados.get(i));
+                        break;
+                    case "assalariado": asss.add(empregados.get(i));
+                        break;
+                    case "comissionado": coms.add((Comissionado)empregados.get(i));
+                        break;
+                }
+            }
+            pilhaUndoHor.push(gson.toJson(hors, typeHor));
+            pilhaUndoAss.push(gson.toJson(asss, typeAss));
+            pilhaUndoCom.push(gson.toJson(coms, typeCom));
+
+            hors = gson.fromJson(pilhaRedoHor.pop(), typeHor);
+            asss = gson.fromJson(pilhaRedoAss.pop(), typeAss);
+            coms = gson.fromJson(pilhaRedoCom.pop(), typeCom);
+            empregados = new LinkedList<>();
+            empregados.addAll(hors);
+            empregados.addAll(asss);
+            empregados.addAll(coms);
+            System.out.println("• Última alteração refeita com sucesso!\n");
+        } else {
+            System.out.println("• Não há nenhuma alteração para ser refeita!\n");
+        }
+        System.out.println("APERTE ENTER PARA CONTINUAR");
+        scan.nextLine();
     }
 
     public static void rodarFolha(){
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tRODAR FOLHA DE PAGAMENTO\n");
+
+        makeChange();
 
         Date dataAtual = null;
         do {
@@ -468,25 +592,39 @@ public class Main {
         List<Empregado> emps = new LinkedList<>();
         for (Empregado empregado : empregados) {
             if (empregado.getUltimoPagamento() == null) {
-                pagamentoTotal += empregado.getSalario();
+                //pagamentoTotal += empregado.getSalario();
                 empregado.setUltimoPagamento(dataAtual);
                 emps.add(empregado);
             } else {
                 Date dif = datOperator.getTimeDifference(empregado.getUltimoPagamento(), dataAtual);
                 if (empregado.getUltimoPagamento() == null || empregado.getAgendaRef().before(dif) || dif.compareTo(empregado.getAgendaRef()) == 0) {
-                    pagamentoTotal += empregado.getSalario();
+                    //pagamentoTotal += empregado.getSalario();
                     empregado.setUltimoPagamento(dataAtual);
                     emps.add(empregado);
                 }
             }
         }
 
-        System.out.printf("\n• Total pago: R$ %.02f\n", pagamentoTotal);
-        System.out.println("• Empregados pagos:");
+        System.out.println("\n• Empregados pagos:");
         System.out.println("    NOME    |    TIPO    |    SALÁRIO LÍQUIDO");
         for(Empregado emp: emps){
-            System.out.printf("%s | %s | %.02f\n", emp.getName(), emp.getType(), emp.getSalario());
+            float salario = emp.getSalario();
+            if(emp.getType().equals("horista")){
+                salario = 0;
+                for(int i = 0; i < ((Horista)emp).getTotalDePontosBatidos(); i++){
+                    salario += ((Horista)emp).getHorasAtIdx(i) * emp.getSalario();
+                }
+                ((Horista)emp).resetPontos();
+            } else if(emp.getType().equals("comissionado")){
+                for(int i = 0; i < ((Comissionado)emp).getTotalVendas(); i++) {
+                    salario += ((Comissionado)emp).getValorVendaAtIdx(i) * (((Comissionado)emp).getComissao() / 100);
+                }
+                ((Comissionado)emp).resetVendas();
+            }
+            System.out.printf("%s | %s | %.02f\n", emp.getName(), emp.getType(), salario - emp.getSindicatoTaxa());
+            pagamentoTotal += salario;
         }
+        System.out.printf("-------------------------\n• Total pago: R$ %.02f\n", pagamentoTotal);
 
         System.out.println("\nAPERTE ENTER PARA CONTINUAR");
         scan.nextLine();
@@ -501,29 +639,47 @@ public class Main {
 
         String[] parts = agenda.split(" ");
 
+        agendaRefsString.add(agenda);
         if(parts[0].equals("mensal")){
-
-        }else if(parts[0].equals("semanal")) {
-
+            agendaRefsDate.add(new Date((long)30*24*60*60*1000));
+            agendaRefsDia.add(parts[1]);
+        } else if(parts[0].equals("semanal")) {
+            agendaRefsDate.add(new Date((long)7*24*60*60*1000*Integer.parseInt(parts[1])));
+            switch (parts[2]){
+                case "domingo": agendaRefsDia.add("Dom");
+                    break;
+                case "segunda": agendaRefsDia.add("Seg");
+                    break;
+                case "terça": agendaRefsDia.add("Ter");
+                    break;
+                case "quarta": agendaRefsDia.add("Qua");
+                    break;
+                case "quinta": agendaRefsDia.add("Qui");
+                    break;
+                case "sexta": agendaRefsDia.add("Sex");
+                    break;
+                case "sabado": agendaRefsDia.add("Sab");
+                    break;
+            }
         }
     }
 
     public static void mostrarEmpregados(){
-    	System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tMOSTRAR EMPREGADOS\n");
         System.out.println("• Empregados");
         for(int i = 0; i < empregados.size(); i++){
             System.out.println(empregados.get(i));
             if(empregados.get(i).getType().equals("horista")){
-            	if(((Horista)empregados.get(i)).getTotalDePontosBatidos() > 0){
-            		Date ponto = ((Horista)empregados.get(i)).getUltimoPonto();
-            		System.out.printf("\t-Ultimo ponto batido: %s\n", format.format(ponto));
-            	}
+                if(((Horista)empregados.get(i)).getTotalDePontosBatidos() > 0){
+                    Date ponto = ((Horista)empregados.get(i)).getUltimoPonto();
+                    System.out.printf("\t-Ultimo ponto batido: %s\n", (ponto == null ? "null" : format.format(ponto)));
+                }
             } else if(empregados.get(i).getType().equals("comissionado")){
-            	if(((Comissionado)empregados.get(i)).getTotalVendas() > 0){
-            		Venda venda = ((Comissionado)empregados.get(i)).getUltimaVenda();
-            		System.out.printf("\t-Ultima venda efetuada: R$ %.02f; %s\n", venda.getValor(), format.format(venda.getData()));
-            	}
+                if(((Comissionado)empregados.get(i)).getTotalVendas() > 0){
+                    Venda venda = ((Comissionado)empregados.get(i)).getUltimaVenda();
+                    System.out.printf("\t-Ultima venda efetuada: R$ %.02f; %s\n", venda.getValor(), format.format(venda.getData()));
+                }
             }
             System.out.println("-------------------------");
         }
@@ -531,5 +687,27 @@ public class Main {
         System.out.printf("• Quantidade atual de sindicalistas: %d\n", sindicato.getCurrentSindicalistsQuantity());
         System.out.println("\n\nAPERTE ENTER PARA CONTINUAR");
         scan.nextLine();
+    }
+
+    public static void makeChange(){
+        pilhaRedoAss = new Stack<>();
+        pilhaRedoHor = new Stack<>();
+        pilhaRedoCom = new Stack<>();
+        List<Horista> hors = new LinkedList<>();
+        List<Empregado> asss = new LinkedList<>();
+        List<Comissionado> coms = new LinkedList<>();
+        for(int i = 0; i < empregados.size(); i++) {
+            switch (empregados.get(i).getType()) {
+                case "horista": hors.add((Horista) empregados.get(i));
+                    break;
+                case "assalariado": asss.add(empregados.get(i));
+                    break;
+                case "comissionado": coms.add((Comissionado)empregados.get(i));
+                    break;
+            }
+        }
+        pilhaUndoHor.push(gson.toJson(hors, typeHor));
+        pilhaUndoAss.push(gson.toJson(asss, typeAss));
+        pilhaUndoCom.push(gson.toJson(coms, typeCom));
     }
 }
