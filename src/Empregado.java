@@ -156,13 +156,12 @@ public class Empregado {
                 "\n\t-CPF: "+ this.cpf +
                 "\n\t-Nome: "+ this.name +
                 "\n\t-Endereço: "+ this.address +
-                "\n\t-Salário: "+ this.salario +
+                "\n\t-Salário: R$ "+ this.salario +
                 "\n\t-Método de pagamento: "+ this.metodoDePagamento +
                 "\n\t-Agenda de pagamento: "+ this.agenda +
                 "\n\t-Último pagamento: "+ this.ultimoPagamento +
-                "\n\t-Próximo pagamento: "+ (this.ultimoPagamento == null ? "null" : new Date(this.ultimoPagamento.getTime() + this.agendaRef.getTime()))+
                 "\n\t-Sindicalista: "+ this.sindicalista +
                 "\n\t-Sindicato ID: "+ this.sindicatoID +
-                "\n\t-Sindicato Taxa: "+ this.sindicatoTaxa;
+                "\n\t-Sindicato Taxa: R$ "+ this.sindicatoTaxa;
     }
 }

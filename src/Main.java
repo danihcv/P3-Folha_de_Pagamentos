@@ -48,6 +48,7 @@ public class Main {
             System.out.println("10. Rodar folha de pagamentos");
             System.out.println("11. Criar nova agenda de pagamento");
             System.out.println("12. Mostrar todos os empregados");
+            System.out.println("-1. Sair");
 
             int sel = scan.nextInt();
             scan.nextLine();
@@ -86,8 +87,18 @@ public class Main {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tADIÇÃO DE EMPREGADO\n");
 
-        System.out.print("-CPF: ");
-        String cpf = scan.nextLine();
+        String cpf;
+        do {
+            System.out.print("-CPF: ");
+             cpf = scan.nextLine();
+             for(Empregado emp: empregados){
+                 if(emp.getCpf().equals(cpf)) {
+                     System.out.println(">>CPF JÁ CADASTRADO!\n");
+                     cpf = "";
+                     break;
+                 }
+             }
+        }while (cpf.equals(""));
         System.out.print("-Nome: ");
         String name = scan.nextLine();
         System.out.print("-Endereço: ");
@@ -483,17 +494,28 @@ public class Main {
                 }
                 while (!formatDay.format(empregados.get(idxEmp).getUltimoPagamento()).equals(agendaRefsDia.get(sel - 4))) {
                     Date curr = new Date(empregados.get(idxEmp).getUltimoPagamento().getTime());
-                    empregados.get(idxEmp).setUltimoPagamento(new Date(curr.getTime() - 24*60*60*1000));
+                    empregados.get(idxEmp).setUltimoPagamento(new Date(curr.getTime() - 24 * 60 * 60 * 1000));
                 }
             } else {
                 if (empregados.get(idxEmp).getUltimoPagamento() == null) {
                     empregados.get(idxEmp).setUltimoPagamento(new Date());
                 }
-                while (empregados.get(idxEmp).getUltimoPagamento().getDate() != Integer.parseInt(agendaRefsDia.get(sel - 4))) {
-                    System.out.println(empregados.get(idxEmp).getUltimoPagamento().getDate());
-                    System.out.println(Integer.parseInt(agendaRefsDia.get(sel - 4)));
-                    long curr = empregados.get(idxEmp).getUltimoPagamento().getTime();
-                    empregados.get(idxEmp).setUltimoPagamento(new Date(curr - 24*60*60*1000));
+                if(agendaRefsDia.get(sel-4).equals("$")){
+                    while(empregados.get(idxEmp).getUltimoPagamento().getDate() < new Date(empregados.get(idxEmp).getUltimoPagamento().getTime() + 24 * 60 * 60 * 1000).getDate()){
+                        Date curr = new Date(empregados.get(idxEmp).getUltimoPagamento().getTime());
+                        empregados.get(idxEmp).setUltimoPagamento(new Date(curr.getTime() - 24 * 60 * 60 * 1000));
+                    }
+                    while (formatDay.format(empregados.get(idxEmp).getUltimoPagamento()).equals("Dom") || formatDay.format(empregados.get(idxEmp).getUltimoPagamento()).equals("Sab")){
+                        Date curr = new Date(empregados.get(idxEmp).getUltimoPagamento().getTime());
+                        empregados.get(idxEmp).setUltimoPagamento(new Date(curr.getTime() - 24 * 60 * 60 * 1000));
+                    }
+                } else {
+                    while (empregados.get(idxEmp).getUltimoPagamento().getDate() != Integer.parseInt(agendaRefsDia.get(sel - 4))) {
+                        System.out.println(empregados.get(idxEmp).getUltimoPagamento().getDate());
+                        System.out.println(Integer.parseInt(agendaRefsDia.get(sel - 4)));
+                        long curr = empregados.get(idxEmp).getUltimoPagamento().getTime();
+                        empregados.get(idxEmp).setUltimoPagamento(new Date(curr - 24 * 60 * 60 * 1000));
+                    }
                 }
             }
         }
@@ -639,11 +661,18 @@ public class Main {
 
         String[] parts = agenda.split(" ");
 
-        agendaRefsString.add(agenda);
         if(parts[0].equals("mensal")){
-            agendaRefsDate.add(new Date((long)30*24*60*60*1000));
-            agendaRefsDia.add(parts[1]);
+            agendaRefsDate.add(new Date((long) 30 * 24 * 60 * 60 * 1000));
+            try {
+                int day = Integer.parseInt(parts[1]);
+                agendaRefsDia.add(parts[1]);
+                agendaRefsString.add(agenda);
+            } catch (Exception e) {
+                agendaRefsDia.add("$");
+                agendaRefsString.add(parts[0] + " $");
+            }
         } else if(parts[0].equals("semanal")) {
+            agendaRefsString.add(agenda);
             agendaRefsDate.add(new Date((long)7*24*60*60*1000*Integer.parseInt(parts[1])));
             switch (parts[2]){
                 case "domingo": agendaRefsDia.add("Dom");
@@ -668,7 +697,10 @@ public class Main {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tMOSTRAR EMPREGADOS\n");
         System.out.println("• Empregados");
+        int sindicalistas = 0;
         for(int i = 0; i < empregados.size(); i++){
+            if(empregados.get(i).isSindicalista())
+                sindicalistas++;
             System.out.println(empregados.get(i));
             if(empregados.get(i).getType().equals("horista")){
                 if(((Horista)empregados.get(i)).getTotalDePontosBatidos() > 0){
@@ -684,7 +716,7 @@ public class Main {
             System.out.println("-------------------------");
         }
 
-        System.out.printf("• Quantidade atual de sindicalistas: %d\n", sindicato.getCurrentSindicalistsQuantity());
+        System.out.printf("• Quantidade atual de sindicalistas: %d\n", sindicalistas);
         System.out.println("\n\nAPERTE ENTER PARA CONTINUAR");
         scan.nextLine();
     }
