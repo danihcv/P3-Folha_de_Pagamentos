@@ -2,7 +2,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Empregado {
+public abstract class Empregado {
     private String type;
     private int id;
     private String cpf;
