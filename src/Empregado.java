@@ -13,10 +13,10 @@ public abstract class Empregado {
     private boolean sindicalista;
     private int sindicatoID = -1;
     private float sindicatoTaxa = 0;
-    private Date ultimoPagamento = null;
+    private Date ultimoPagamento;
     private String agenda;
     private Date agendaRef;
-    private String agendaDia = "";
+    private String agendaDia = "-";
 
     public Empregado(int id, String cpf, String name, String address, float salario, String metodo) {
         this.type = "assalariado";
@@ -26,8 +26,27 @@ public abstract class Empregado {
         this.address = address;
         this.salario = salario;
         this.metodoDePagamento = metodo;
+        this.ultimoPagamento = new Date();
         this.agenda = "mensal";
         this.agendaRef = new Date((long)30*24*60*60*1000);
+    }
+
+    public Empregado(int id, String cpf, String name, String address, float salario, String metodo, boolean sindicalista,
+                     int sindicatoID, float sindicatoTaxa, Date ultimoPagamento, String agenda, Date agendaRef, String agendaDia) {
+        this.type = "assalariado";
+        this.id = id;
+        this.cpf = cpf;
+        this.name = name;
+        this.address = address;
+        this.salario = salario;
+        this.metodoDePagamento = metodo;
+        this.sindicalista = sindicalista;
+        this.sindicatoID = sindicatoID;
+        this.sindicatoTaxa = sindicatoTaxa;
+        this.ultimoPagamento = ultimoPagamento;
+        this.agenda = agenda;
+        this.agendaRef = agendaRef;
+        this.agendaDia = agendaDia;
     }
 
     public Empregado(Empregado emp){
@@ -43,6 +62,8 @@ public abstract class Empregado {
         this.sindicatoTaxa = emp.getSindicatoTaxa();
         this.ultimoPagamento = emp.getUltimoPagamento();
         this.agenda = emp.getAgenda();
+        this.agendaRef = emp.getAgendaRef();
+        this.agendaDia = emp.getAgendaDia();
     }
 
     public String getAgendaDia() {

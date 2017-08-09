@@ -12,8 +12,16 @@ public class Horista extends Empregado {
         this.setAgendaRef(new Date(2*7*24*60*60*1000));
     }
 
+    public Horista(int id, String cpf, String name, String address, float salario, String metodo, boolean sindicalista,
+                       int sindicatoID, float sindicatoTaxa, Date ultimoPagamento, String agenda, Date agendaRef, String agendaDia, List<String> pontosHoras) {
+        super(id, cpf, name, address, salario, metodo, sindicalista, sindicatoID, sindicatoTaxa, ultimoPagamento, agenda, agendaRef, agendaDia);
+        this.setType("horista");
+        this.pontosHoras = pontosHoras;
+    }
+
     public Horista(Horista emp){
         super(emp);
+        this.setType("horista");
         this.pontosHoras = emp.pontosHoras;
     }
 

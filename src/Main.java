@@ -1,6 +1,3 @@
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.*;
 import java.text.*;
@@ -8,7 +5,7 @@ import java.text.*;
 public class Main {
     public static void main(String[] args) {
         DataBase db = new DataBase();
-        Scanner scan = new Scanner(System.in);
+        Scanner scanInt = new Scanner(System.in);
 
         boolean menu = true;
         do{
@@ -29,8 +26,7 @@ public class Main {
             System.out.println("12. Mostrar todos os empregados");
             System.out.println("-1. Sair");
 
-            int sel = scan.nextInt();
-            scan.nextLine();
+            int sel = scanInt.nextInt();
             switch(sel) {
                 case 1: db.addEmpregado();
                     break;
