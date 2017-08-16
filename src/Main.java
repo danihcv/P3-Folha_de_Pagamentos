@@ -6,8 +6,9 @@ public class Main {
     public static void main(String[] args) {
         DataBase db = new DataBase();
         Scanner scanInt = new Scanner(System.in);
+        Scanner scan = new Scanner(System.in);
 
-        boolean menu = true;
+        boolean menu = true, exception = false;
         do{
             System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             System.out.println("\t\tFOLHA DE PAGAMENTOS");
@@ -26,34 +27,62 @@ public class Main {
             System.out.println("12. Mostrar todos os empregados");
             System.out.println("-1. Sair");
 
-            int sel = scanInt.nextInt();
-            switch(sel) {
-                case 1: db.addEmpregado();
-                    break;
-                case 2: db.removerEmpregado();
-                    break;
-                case 3: db.editarEmpregado();
-                    break;
-                case 4: db.baterPonto();
-                    break;
-                case 5: db.fazerVenda();
-                    break;
-                case 6: db.atualizarTaxaSindical();
-                    break;
-                case 7: db.atualizarAgendaPagamento();
-                    break;
-                case 8: db.undo();
-                    break;
-                case 9: db.redo();
-                    break;
-                case 10: db.rodarFolha();
-                    break;
-                case 11: db.criarNovaAgenda();
-                    break;
-                case 12: db.mostrarEmpregados();
-                    break;
-                case -1: menu = false;
-                    break;
+            int sel;
+            try {
+                sel = Integer.parseInt(scan.nextLine());
+                switch (sel) {
+                    case 1:
+                        db.addEmpregado();
+                        break;
+                    case 2:
+                        db.removerEmpregado();
+                        break;
+                    case 3:
+                        db.editarEmpregado();
+                        break;
+                    case 4:
+                        db.baterPonto();
+                        break;
+                    case 5:
+                        db.fazerVenda();
+                        break;
+                    case 6:
+                        db.atualizarTaxaSindical();
+                        break;
+                    case 7:
+                        db.atualizarAgendaPagamento();
+                        break;
+                    case 8:
+                        db.undo();
+                        break;
+                    case 9:
+                        db.redo();
+                        break;
+                    case 10:
+                        db.rodarFolha();
+                        break;
+                    case 11:
+                        db.criarNovaAgenda();
+                        break;
+                    case 12:
+                        db.mostrarEmpregados();
+                        break;
+                    case -1:
+                        menu = false;
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\n\nOcorreu um erro! "+ e.getMessage() +".\nPor favor, digite um dado cujo tipo seja coerente ao que foi solicitado.");
+                exception = true;
+            } catch (Exception e) {
+                System.out.println("\n\n>> Ocorreu um erro inesperado!");
+                exception = true;
+            } finally {
+                if (exception) {
+                    System.out.println("APERTE ENTER PARA CONTINUAR");
+                    scan.nextLine();
+                    exception = false;
+                }
             }
         }while(menu);
     }

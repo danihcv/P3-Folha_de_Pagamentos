@@ -12,38 +12,28 @@ public class DataBase {
     List<String> agendaRefsString = new LinkedList<>();
 
     UndoRedoHelper dson = new UndoRedoHelper();
-    /*
-        Gson gson = new Gson();
-        Type typeHor = new TypeToken<LinkedList<Horista>>() {}.getType();
-        Type typeAss = new TypeToken<LinkedList<Empregado>>() {}.getType();
-        Type typeCom = new TypeToken<LinkedList<Comissionado>>() {}.getType();
-    */
+/*
     Scanner scanString = new Scanner(System.in);
     Scanner scanInt = new Scanner(System.in);
     Scanner scanFloat = new Scanner(System.in);
+*/
+    Scanner scan = new Scanner(System.in);
     int currentID = 0;
-    /*
-        Stack<String> pilhaUndoAss = new Stack<>();
-        Stack<String> pilhaUndoHor = new Stack<>();
-        Stack<String> pilhaUndoCom = new Stack<>();
-        Stack<String> pilhaRedoAss = new Stack<>();
-        Stack<String> pilhaRedoHor = new Stack<>();
-        Stack<String> pilhaRedoCom = new Stack<>();
-    */
+
     private Stack<List<String>> pilhaUndo = new Stack<>();
     private Stack<List<String>> pilhaRedo = new Stack<>();
 
     private List<Empregado> empregados = new LinkedList<>();
     private Sindicato sindicato = new Sindicato();
 
-    public void addEmpregado() {
+    public void addEmpregado() throws NumberFormatException {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tADIÇÃO DE EMPREGADO\n");
 
         String cpf;
         do {
             System.out.print("-CPF: ");
-            cpf = scanString.nextLine();
+            cpf = scan.nextLine();
             for (Empregado emp : empregados) {
                 if (emp.getCpf().equals(cpf)) {
                     System.out.println(">>CPF JÁ CADASTRADO!\n");
@@ -53,9 +43,9 @@ public class DataBase {
             }
         } while (cpf.equals(""));
         System.out.print("-Nome: ");
-        String name = scanString.nextLine();
+        String name = scan.nextLine();
         System.out.print("-Endereço: ");
-        String address = scanString.nextLine();
+        String address = scan.nextLine();
         System.out.println("\n-Selecione o tipo: ");
         System.out.println("1. Horista");
         System.out.println("2. Assalariado");
@@ -63,7 +53,7 @@ public class DataBase {
         int tipo;
         float comissao = 0;
         do {
-            tipo = scanInt.nextInt();
+            tipo = Integer.parseInt(scan.nextLine());
         } while (tipo <= 0 || tipo > 3);
         switch (tipo) {
             case 1:
@@ -74,11 +64,11 @@ public class DataBase {
                 break;
             case 3:
                 System.out.print("-Comissão (%): ");
-                comissao = scanFloat.nextFloat();
+                comissao = Float.parseFloat(scan.nextLine());
                 System.out.print("-Salário por semana: ");
                 break;
         }
-        float salario = scanFloat.nextFloat();
+        float salario = Float.parseFloat(scan.nextLine());
 
         int sel;
         do {
@@ -86,7 +76,7 @@ public class DataBase {
             System.out.println("1. Cheque pelos correios");
             System.out.println("2. Cheque em mãos");
             System.out.println("3. Depósito em conta");
-            sel = scanInt.nextInt();
+            sel = Integer.parseInt(scan.nextLine());
         } while (sel <= 0 || sel > 3);
 
         String metodoDePagamento = "";
@@ -135,7 +125,7 @@ public class DataBase {
         empregados.remove(idxEmp);
     }
 
-    public void editarEmpregado() {
+    public void editarEmpregado() throws NumberFormatException {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tEDITAR EMPREGADO");
 
@@ -162,7 +152,7 @@ public class DataBase {
             System.out.println("5. Participação no sindicato");
             System.out.println("6. Identificação no sindicato");
             System.out.println("7. Taxa sindical");
-            sel = scanInt.nextInt();
+            sel = Integer.parseInt(scan.nextLine());
 
             if (sel == -1)
                 return;
@@ -177,14 +167,14 @@ public class DataBase {
                 System.out.println("\nALTERAR NOME\n");
                 System.out.printf("-Nome atual: %s\n", emp.getName());
                 System.out.print("-Digite o novo nome: ");
-                newName = scanString.nextLine();
+                newName = scan.nextLine();
                 empregados.get(idxEmp).setName(newName);
                 break;
             case 2:
                 System.out.println("\nALTERAR ENDEREÇO\n");
                 System.out.printf("-Endereço atual: %s\n", emp.getAddress());
                 System.out.print("-Digite o novo endereço: ");
-                newAddress = scanString.nextLine();
+                newAddress = scan.nextLine();
                 empregados.get(idxEmp).setAdress(newAddress);
                 break;
             case 3:
@@ -196,7 +186,7 @@ public class DataBase {
                     System.out.println("1. Horista");
                     System.out.println("2. Assalariado");
                     System.out.println("3. Comissionado");
-                    newType = scanInt.nextInt();
+                    newType = Integer.parseInt(scan.nextLine());
                 } while (newType <= 0 || newType > 3);
                 if (newType == 1)
                     empregados.add(new Horista(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
@@ -204,7 +194,7 @@ public class DataBase {
                     empregados.add(new Assalariado(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), emp.getMetodoDePagamento()));
                 else {
                     System.out.println("-Digite a comissão (%): ");
-                    float comissao = scanFloat.nextFloat();
+                    float comissao = Float.parseFloat(scan.nextLine());
                     empregados.add(new Comissionado(emp.getId(), emp.getCpf(), emp.getName(), emp.getAddress(), emp.getSalario(), comissao, emp.getMetodoDePagamento()));
                 }
                 empregados.remove(idxEmp);
@@ -218,7 +208,7 @@ public class DataBase {
                     System.out.println("1. Cheque pelos correios");
                     System.out.println("2. Cheque em mãos");
                     System.out.println("3. Depósito em conta");
-                    met = scanInt.nextInt();
+                    met = Integer.parseInt(scan.nextLine());
                 } while (met <= 0 || met > 3);
                 if (met == 1)
                     newMetodoDePagamento = "cheque-correios";
@@ -234,12 +224,12 @@ public class DataBase {
                 String res;
                 do {
                     System.out.printf("\nVocê deseja alterar o status do empregado para '%ssindicalista'? (s | n) ", emp.isSindicalista() ? "não " : "");
-                    res = scanString.nextLine();
+                    res = scan.nextLine();
                 } while (!res.equals("s") && !res.equals("n"));
 
                 if (res.equals("s") && !emp.isSindicalista()) {
                     System.out.print("-Digite a taxa sindical: ");
-                    Float taxa = scanFloat.nextFloat();
+                    Float taxa = Float.parseFloat(scan.nextLine());
 
                     empregados.get(idxEmp).setSindicalista(true);
                     empregados.get(idxEmp).setSindicatoTaxa(taxa);
@@ -257,7 +247,7 @@ public class DataBase {
                 System.out.println("\nALTERAR IDENTIFICAÇÃO NO SINDICATO\n");
                 System.out.printf("• O ID atual do empregado no sindicato é %d\n", emp.getSindicatoID());
                 System.out.print("-Insira a nova identificação desejada (int): ");
-                int newID = scanInt.nextInt();
+                int newID = Integer.parseInt(scan.nextLine());
 
                 empregados.get(idxEmp).setSindicatoID(newID);
                 sindicato.setCurrentID(newID + 1);
@@ -266,7 +256,7 @@ public class DataBase {
                 System.out.println("\nALTERAR TAXA SINDICAL\n");
                 System.out.printf("-Taxa atual: %f\n", emp.getSindicatoTaxa());
                 System.out.print("-Digite a nova taxa: ");
-                newTaxa = scanFloat.nextFloat();
+                newTaxa = Float.parseFloat(scan.nextLine());
                 empregados.get(idxEmp).setSindicatoTaxa(newTaxa);
                 break;
         }
@@ -292,7 +282,7 @@ public class DataBase {
         Date dataEntrada = null, dataSaida = null;
         do {
             System.out.print("-Digite a data da entrada (dd/MM/aaaa HH:mm): ");
-            String line = scanString.nextLine();
+            String line = scan.nextLine();
             try {
                 dataEntrada = format.parse(line);
             } catch (ParseException e) {
@@ -302,7 +292,7 @@ public class DataBase {
 
         do {
             System.out.print("-Digite a data da saída (dd/MM/aaaa HH:mm): ");
-            String line = scanString.nextLine();
+            String line = scan.nextLine();
             try {
                 dataSaida = format.parse(line);
             } catch (ParseException e) {
@@ -318,7 +308,7 @@ public class DataBase {
         ((Horista) empregados.get(idxEmp)).setUltimoPonto(dataSaida);
     }
 
-    public void fazerVenda() {
+    public void fazerVenda() throws NumberFormatException {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\nFAZER UMA VENDA\n");
 
@@ -337,12 +327,12 @@ public class DataBase {
 
         float valor;
         System.out.print("-Informe o valor da venda: ");
-        valor = scanFloat.nextFloat();
+        valor = Float.parseFloat(scan.nextLine());
 
         Date data = null;
         do {
             System.out.print("-Digite a data da venda (dd/MM/aaaa HH:mm): ");
-            String line = scanString.nextLine();
+            String line = scan.nextLine();
             try {
                 data = format.parse(line);
             } catch (ParseException e) {
@@ -354,7 +344,7 @@ public class DataBase {
         ((Comissionado) empregados.get(idxEmp)).addVenda(valor, data);
     }
 
-    public void atualizarTaxaSindical() {
+    public void atualizarTaxaSindical() throws NumberFormatException {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\nATUALIZAR TAXA SINDICAL\n");
 
@@ -372,13 +362,13 @@ public class DataBase {
         } while (idxEmp == -1);
 
         System.out.print("-Digite a nova taxa: ");
-        float newTaxa = scanFloat.nextFloat();
+        float newTaxa = Float.parseFloat(scan.nextLine());
 
         makeChange();
         empregados.get(idxEmp).setSindicatoTaxa(newTaxa);
     }
 
-    public void atualizarAgendaPagamento() {
+    public void atualizarAgendaPagamento() throws NumberFormatException {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\tESCOLHER NOVA AGENDA\n");
 
@@ -403,7 +393,7 @@ public class DataBase {
             for (int i = 0; i < agendaRefsString.size(); i++) {
                 System.out.printf("%d. %s\n", i + 4, agendaRefsString.get(i));
             }
-            sel = scanInt.nextInt();
+            sel = Integer.parseInt(scan.nextLine());
         } while (sel <= 0 || sel > 3 + agendaRefsString.size());
 
         makeChange();
@@ -485,7 +475,7 @@ public class DataBase {
             System.out.println("• Não há nenhuma alteração para ser desfeita!\n");
         }
         System.out.println("APERTE ENTER PARA CONTINUAR");
-        scanString.nextLine();
+        scan.nextLine();
     }
 
     public void redo() {
@@ -516,7 +506,7 @@ public class DataBase {
             System.out.println("• Não há nenhuma alteração para ser refeita!\n");
         }
         System.out.println("APERTE ENTER PARA CONTINUAR");
-        scanString.nextLine();
+        scan.nextLine();
     }
 
     public void rodarFolha() {
@@ -528,7 +518,7 @@ public class DataBase {
         Date dataAtual = null;
         do {
             System.out.print("-Digite a data atual (dd/MM/aaaa HH:mm): ");
-            String line = scanString.nextLine();
+            String line = scan.nextLine();
             try {
                 dataAtual = format.parse(line);
             } catch (ParseException e) {
@@ -575,7 +565,7 @@ public class DataBase {
         System.out.printf("-------------------------\n• Total pago: R$ %.02f\n", pagamentoTotal);
 
         System.out.println("\nAPERTE ENTER PARA CONTINUAR");
-        scanString.nextLine();
+        scan.nextLine();
     }
 
     public void criarNovaAgenda() {
@@ -583,7 +573,7 @@ public class DataBase {
         System.out.println("\tCRIAR NOVA AGENDA DE PAGAMENTO\n");
 
         System.out.print("-Digite a nova agenda: ");
-        String agenda = scanString.nextLine();
+        String agenda = scan.nextLine();
 
         String[] parts = agenda.split(" ");
 
@@ -651,7 +641,7 @@ public class DataBase {
 
         System.out.printf("• Quantidade atual de sindicalistas: %d\n", sindicalistas);
         System.out.println("\n\nAPERTE ENTER PARA CONTINUAR");
-        scanString.nextLine();
+        scan.nextLine();
     }
 
     public void makeChange() {
@@ -682,7 +672,7 @@ public class DataBase {
     public int getEmpregadoIdxByCpf() {
         String cpf;
         System.out.print("-Digite o CPF do empregado: ");
-        cpf = scanString.nextLine();
+        cpf = scan.nextLine();
         if (cpf.equals("-1"))
             return -2;
         for (int i = 0; i < empregados.size(); i++) {
